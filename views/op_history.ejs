@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OP History</title>
+
+  <style>
+    * { box-sizing: border-box; font-family: "Segoe UI", Arial; }
+    body { margin: 0; background: #eef3f8; }
+
+    .topbar {
+      background: linear-gradient(135deg,#0a6ebd,#084f8c);
+      color: white;
+      padding: 16px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 25px auto;
+      padding: 0 20px;
+    }
+
+    .search {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      margin-bottom: 30px;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 6px;
+      height: 100%;
+      background: #0a6ebd;
+      border-radius: 14px 0 0 14px;
+    }
+
+    .card h3 { margin: 0; color: #0a6ebd; }
+    .card p { margin: 5px 0; font-size: 14px; }
+
+    .revisit {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 6px 16px;
+      background: #0a6ebd;
+      color: white;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <h2>📂 OP History</h2>
+  <a href="/dashboard" style="color:white;text-decoration:none;">⬅ Back</a>
+</div>
+
+<div class="container">
+
+  <!-- Search -->
+  <div class="search">
+    <input
+      id="searchMobile"
+      placeholder="Type mobile number to filter history"
+    >
+  </div>
+
+  <!-- Results -->
+  <div id="results" class="grid">
+    <% patients.forEach(p => { %>
+      <div class="card">
+        <h3><%= p.name %></h3>
+        <p><b>Mobile:</b> <%= p.mobile %></p>
+        <p><b>Complaint:</b> <%= p.complaint || '-' %></p>
+        <p><b>Date:</b> <%= new Date(p.created_at).toLocaleDateString() %></p>
+        <a href="/op/revisit/<%= p.id %>" class="revisit">🔁 Re-Visit</a>
+      </div>
+    <% }) %>
+  </div>
+
+</div>
+
+<script>
+  const input = document.getElementById("searchMobile");
+  const results = document.getElementById("results");
+
+  input.addEventListener("keyup", async () => {
+    const val = input.value.trim();
+    const res = await fetch(`/op/history/search?mobile=${val}`);
+    const data = await res.json();
+
+    let html = "";
+    data.forEach(p => {
+      html += `
+        <div class="card">
+          <h3>${p.name}</h3>
+          <p><b>Mobile:</b> ${p.mobile}</p>
+          <p><b>Complaint:</b> ${p.complaint || "-"}</p>
+          <p><b>Date:</b> ${new Date(p.created_at).toLocaleDateString()}</p>
+          <a href="/op/revisit/${p.id}" class="revisit">🔁 Re-Visit</a>
+        </div>
+      `;
+    });
+
+    results.innerHTML = html;
+  });
+</script>
+
+</body>
+</html>

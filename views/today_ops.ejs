@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Today's OP Queue</title>
+
+  <style>
+    * { box-sizing: border-box; font-family: "Segoe UI", Arial; }
+
+    body {
+      margin: 0;
+      background: #eef3f8;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: linear-gradient(135deg, #0a6ebd, #084f8c);
+      color: white;
+      padding: 18px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .topbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+      padding: 35px;
+    }
+
+    .op-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+      gap: 28px;
+    }
+
+    .op-card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+      position: relative;
+      transition: transform 0.2s;
+    }
+
+    .op-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .op-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 8px;
+      height: 100%;
+      border-radius: 16px 0 0 16px;
+    }
+
+    .Waiting::before { background: #2ecc71; }
+    .InConsultation::before { background: #f1c40f; }
+    .Completed::before { background: #3498db; }
+
+    .token {
+      font-size: 26px;
+      font-weight: bold;
+      color: #0a6ebd;
+    }
+
+    .patient {
+      margin-top: 8px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .status {
+      margin-top: 4px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .actions {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .actions form {
+      flex: 1;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .call { background: #f1c40f; color: #000; }
+    .done { background: #3498db; }
+
+    .call:hover { background: #d4ac0d; }
+    .done:hover { background: #2e86c1; }
+  </style>
+</head>
+
+<body>
+
+  <div class="topbar">
+    <h1>📋 Today OP Queue</h1>
+    <a href="/dashboard">Back</a>
+  </div>
+
+  <div class="container">
+
+    <div class="op-grid">
+      <% ops.forEach(o => { %>
+        <div class="op-card <%= o.status.replace(' ','') %>">
+
+          <div class="token">Token #<%= o.token_no %></div>
+          <div class="patient"><b><%= o.name %></b></div>
+          <div class="status"><%= o.status %></div>
+
+          <div class="actions">
+            <% if(o.status === 'Waiting'){ %>
+              <form method="POST" action="/op/call/<%= o.id %>">
+                <button class="btn call">Call</button>
+              </form>
+            <% } %>
+
+            <% if(o.status !== 'Completed'){ %>
+              <form method="POST" action="/op/complete/<%= o.id %>">
+                <button class="btn done">Complete</button>
+              </form>
+            <% } %>
+          </div>
+
+        </div>
+      <% }) %>
+    </div>
+
+  </div>
+
+</body>
+</html>

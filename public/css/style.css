@@ -1,0 +1,218 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  margin: 0;
+}
+
+.center-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.topbar {
+  background: #0a6ebd;
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar a {
+  color: white;
+  text-decoration: none;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  width: 300px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+textarea {
+  resize: none;
+  height: 80px;
+}
+
+.btn {
+  background: #0a6ebd;
+  color: white;
+  padding: 10px;
+  border: none;
+  width: 100%;
+  margin-top: 15px;
+  cursor: pointer;
+}
+
+.btn.small {
+  width: auto;
+  padding: 6px 12px;
+}
+
+.btn.done {
+  background: green;
+}
+
+.dashboard-cards {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 60px;
+}
+
+.dash-card {
+  background: white;
+  width: 220px;
+  padding: 30px;
+  text-align: center;
+  border-radius: 10px;
+  text-decoration: none;
+  color: black;
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+}
+
+.dash-card:hover {
+  background: #eaf4ff;
+}
+
+.form-box {
+  width: 400px;
+  margin: 40px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+}
+
+.op-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.op-card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+.op-card.Waiting {
+  border-left: 6px solid green;
+}
+
+.op-card.InConsultation {
+  border-left: 6px solid orange;
+}
+
+.op-card.Completed {
+  border-left: 6px solid blue;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+/* =====================
+   HOME PAGE STYLES
+===================== */
+
+.home-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a6ebd, #5fa8ff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-container {
+  background: white;
+  width: 700px;
+  max-width: 95%;
+  padding: 40px;
+  border-radius: 14px;
+  box-shadow: 0 20px 45px rgba(0,0,0,0.25);
+  text-align: center;
+}
+
+.home-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #0a6ebd;
+}
+
+.home-header p {
+  margin-top: 8px;
+  color: #555;
+  font-size: 15px;
+}
+
+.home-actions {
+  display: flex;
+  justify-content: space-around;
+  gap: 30px;
+  margin-top: 35px;
+  flex-wrap: wrap;
+}
+
+.home-card {
+  width: 260px;
+  background: #f4f9ff;
+  padding: 25px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #333;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.home-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.home-card .icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.home-card h3 {
+  margin: 10px 0 5px;
+  color: #0a6ebd;
+}
+
+.home-card p {
+  font-size: 14px;
+  color: #555;
+}
+
+.home-footer {
+  margin-top: 35px;
+}
+
+.register-link {
+  display: inline-block;
+  padding: 12px 22px;
+  border-radius: 25px;
+  border: 2px solid #0a6ebd;
+  color: #0a6ebd;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.register-link:hover {
+  background: #0a6ebd;
+  color: white;
+}

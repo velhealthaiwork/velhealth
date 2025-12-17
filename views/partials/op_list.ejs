@@ -1,0 +1,35 @@
+<h2 style="color:#0a6ebd;margin-top:0;">
+  OP List - <%= status %>
+</h2>
+
+<% if (ops.length === 0) { %>
+  <p style="color:#777;">No OP records found</p>
+<% } else { %>
+
+  <div style="
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:20px;
+  ">
+
+    <% ops.forEach(o => { %>
+      <div style="
+        background:#f4f9ff;
+        padding:18px;
+        border-radius:14px;
+        box-shadow:0 8px 20px rgba(0,0,0,0.15);
+      ">
+        <h3 style="margin:0;color:#0a6ebd;">
+          Token #<%= o.token_no %>
+        </h3>
+        <p><b>Name:</b> <%= o.name %></p>
+        <p><b>Status:</b> <%= o.status %></p>
+        <p style="font-size:13px;color:#666;">
+          <%= new Date(o.created_at).toLocaleString() %>
+        </p>
+      </div>
+    <% }) %>
+
+  </div>
+
+<% } %>

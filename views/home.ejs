@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hospital OP Desk</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a6ebd, #5fa8ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-container {
+      background: #ffffff;
+      width: 720px;
+      max-width: 95%;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+
+    .home-header h1 {
+      margin: 0;
+      font-size: 30px;
+      color: #0a6ebd;
+    }
+
+    .home-header p {
+      margin-top: 10px;
+      font-size: 15px;
+      color: #555;
+    }
+
+    .home-actions {
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .home-card {
+      width: 260px;
+      background: #f4f9ff;
+      padding: 28px;
+      border-radius: 14px;
+      text-decoration: none;
+      color: #333;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .home-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+
+    .home-card .icon {
+      font-size: 46px;
+      margin-bottom: 12px;
+    }
+
+    .home-card h3 {
+      margin: 10px 0 6px;
+      font-size: 20px;
+      color: #0a6ebd;
+    }
+
+    .home-card p {
+      font-size: 14px;
+      color: #555;
+      margin: 0;
+    }
+
+    .home-footer {
+      margin-top: 40px;
+    }
+
+    .register-btn {
+      display: inline-block;
+      padding: 14px 28px;
+      border-radius: 30px;
+      border: 2px solid #0a6ebd;
+      color: #0a6ebd;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .register-btn:hover {
+      background: #0a6ebd;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      .home-container {
+        padding: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="home-container">
+
+    <div class="home-header">
+      <h1>🏥  Vel Health OP Desk</h1>
+      <p>Patient Registration & Appointment Management System</p>
+    </div>
+
+    <div class="home-actions">
+
+      <a href="/login/reception" class="home-card">
+        <div class="icon">🧾</div>
+        <h3>Reception Login</h3>
+        <p>Register OP, billing & queue management</p>
+      </a>
+
+      <a href="/login/doctor" class="home-card">
+        <div class="icon">👨‍⚕️</div>
+        <h3>Doctor Login</h3>
+        <p>View & manage today’s OP patients</p>
+      </a>
+
+    </div>
+
+    <div class="home-footer">
+      <a href="/register" class="register-btn">
+        ➕ New Staff Registration
+      </a>
+    </div>
+
+  </div>
+
+</body>
+</html>
