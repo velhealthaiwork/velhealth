@@ -1,28 +1,161 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Billing</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>Billing & Payment</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a6ebd, #5fa8ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Top Bar */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(135deg, #084f8c, #0a6ebd);
+      color: white;
+      padding: 16px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .topbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    /* Card */
+    .bill-card {
+      background: white;
+      width: 420px;
+      max-width: 95%;
+      padding: 35px 30px 40px;
+      border-radius: 18px;
+      box-shadow: 0 25px 55px rgba(0,0,0,0.3);
+      margin-top: 90px;
+    }
+
+    .bill-card h3 {
+      margin-top: 0;
+      text-align: center;
+      color: #0a6ebd;
+      margin-bottom: 25px;
+      font-size: 22px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #0a6ebd;
+      box-shadow: 0 0 0 2px rgba(10,110,189,0.15);
+    }
+
+    .pay-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #0a6ebd, #084f8c);
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .pay-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.35);
+    }
+
+    .note {
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+      margin-top: 14px;
+    }
+  </style>
 </head>
-<body class="center-page">
 
-<div class="card">
-  <h2>Billing</h2>
+<body>
 
-  <form method="POST" action="/billing/pay">
+  <!-- Top Bar -->
+  <div class="topbar">
+    <h2>💳 Billing & Payment</h2>
+    <a href="/dashboard">⬅ Dashboard</a>
+  </div>
+
+  <!-- Billing Card -->
+  <form class="bill-card" method="POST" action="/billing/pay">
+
+    <!-- VERY IMPORTANT -->
     <input type="hidden" name="opId" value="<%= opId %>">
 
-    <input name="amount" placeholder="Amount" required>
+    <h3>Payment Details</h3>
 
-    <select name="payment_type">
-      <option>Cash</option>
-      <option>UPI</option>
-      <option>Scheme</option>
+    <label>Consultation / Service Amount</label>
+    <input
+      type="number"
+      name="amount"
+      placeholder="Enter amount (₹)"
+      required
+    >
+
+    <label>Payment Mode</label>
+    <select name="payment_type" required>
+      <option value="">Select Payment Type</option>
+      <option value="Cash">💵 Cash</option>
+      <option value="UPI">📱 UPI</option>
+      <option value="Card">💳 Card</option>
     </select>
 
-    <button class="btn">Confirm Payment</button>
+    <button type="submit" class="pay-btn">
+      ✔ Confirm & Pay
+    </button>
+
+    <div class="note">
+      Receipt will be generated after successful payment
+    </div>
+
   </form>
-</div>
 
 </body>
 </html>
