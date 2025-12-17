@@ -4,6 +4,9 @@ const db = require("./db");
 
 const app = express();
 
+/* ===========================
+   BASIC CONFIG
+=========================== */
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -12,9 +15,19 @@ app.use(
   session({
     secret: "opdesk_secret",
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false
   })
 );
+
+/* ===========================
+   AUTH MIDDLEWARE
+=========================== */
+const requireLogin = (role) => (req, res, next) => {
+  if (!req.session.user || req.session.role !== role) {
+    return res.redirect("/");
+  }
+  next();
+};
 
 /* ===========================
    HOME
@@ -24,7 +37,7 @@ app.get("/", (req, res) => {
 });
 
 /* ===========================
-   ROLE BASED LOGIN
+   LOGIN
 =========================== */
 app.get("/login/:role", (req, res) => {
   res.render("login", { role: req.params.role });
@@ -38,13 +51,16 @@ app.post("/login/:role", (req, res) => {
     "SELECT * FROM staff_users WHERE username=? AND password=? AND role=?",
     [username, password, role],
     (err, result) => {
-      if (result.length === 0) return res.send("❌ Invalid Login");
+      if (err || result.length === 0) {
+        return res.send("❌ Invalid Login");
+      }
 
       req.session.user = username;
       req.session.role = role;
 
-      if (role === "reception") res.redirect("/dashboard");
-      else res.redirect("/doctor");
+      return role === "reception"
+        ? res.redirect("/dashboard")
+        : res.redirect("/doctor");
     }
   );
 });
@@ -60,18 +76,16 @@ app.post("/register", (req, res) => {
   const { username, password, role } = req.body;
 
   db.query(
-    "INSERT INTO staff_users VALUES (NULL,?,?,?)",
+    "INSERT INTO staff_users (username,password,role) VALUES (?,?,?)",
     [username, password, role],
     () => res.redirect("/")
   );
 });
 
 /* ===========================
-   RECEPTION DASHBOARD
+   DASHBOARD (RECEPTION)
 =========================== */
-app.get("/dashboard", (req, res) => {
-  if (req.session.role !== "reception") return res.redirect("/");
-
+app.get("/dashboard", requireLogin("reception"), (req, res) => {
   db.query(
     `SELECT
       COUNT(*) AS total,
@@ -79,61 +93,49 @@ app.get("/dashboard", (req, res) => {
       SUM(status='In Consultation') AS consulting,
       SUM(status='Completed') AS completed
      FROM op_patients
-     WHERE DATE(created_at) = CURDATE()`,
+     WHERE DATE(created_at)=CURDATE()`,
     (err, rows) => {
-
-      const stats = rows && rows.length
-        ? rows[0]
-        : { total: 0, waiting: 0, consulting: 0, completed: 0 };
-
+      const stats = rows?.[0] || {
+        total: 0,
+        waiting: 0,
+        consulting: 0,
+        completed: 0
+      };
       res.render("dashboard", { stats });
     }
   );
 });
 
-
 /* ===========================
-   NEW OP + SLOT AUTO LOCK
+   NEW OP (SLOT LOCK)
 =========================== */
-app.get("/op/new", (req, res) => {
-  if (req.session.role !== "reception") return res.redirect("/");
-
+app.get("/op/new", requireLogin("reception"), (req, res) => {
   db.query(
     `SELECT time_slot, COUNT(*) AS count
      FROM op_patients
-     WHERE DATE(created_at) = CURDATE()
+     WHERE DATE(created_at)=CURDATE()
      GROUP BY time_slot`,
     (err, rows) => {
+      const slotCount = {};
+      rows?.forEach(r => (slotCount[r.time_slot] = r.count));
 
-      const slotCount = {};   // ✅ ALWAYS DEFINED
-
-      if (rows && rows.length > 0) {
-        rows.forEach(r => {
-          slotCount[r.time_slot] = r.count;
-        });
-      }
-
-      db.query("SELECT * FROM departments", (e, depts) => {
-        db.query("SELECT * FROM doctors", (e2, docs) => {
-          res.render("new_op", {
-            depts,
-            docs,
-            slotCount   // ✅ SENT NO MATTER WHAT
-          });
+      db.query("SELECT * FROM departments", (_, depts) => {
+        db.query("SELECT * FROM doctors", (_, docs) => {
+          res.render("new_op", { depts, docs, slotCount });
         });
       });
     }
   );
 });
 
-app.post("/op/new", (req, res) => {
+app.post("/op/new", requireLogin("reception"), (req, res) => {
   const token = Math.floor(100 + Math.random() * 900);
   const d = req.body;
 
   db.query(
     `INSERT INTO op_patients
-    (token_no,name,mobile,address,scheme_id,complaint,department_id,doctor_id,time_slot)
-    VALUES (?,?,?,?,?,?,?,?,?)`,
+     (token_no,name,mobile,address,scheme_id,complaint,department_id,doctor_id,time_slot,status,created_at)
+     VALUES (?,?,?,?,?,?,?,?,?,'Waiting',NOW())`,
     [
       token,
       d.name,
@@ -145,24 +147,26 @@ app.post("/op/new", (req, res) => {
       d.doctor,
       d.time_slot
     ],
-    (err, result) => {
-      res.redirect(`/billing/${result.insertId}`);
-    }
+    (_, result) => {
+  if (!result) return res.send("OP creation failed");
+  res.redirect(`/billing/${result.insertId}`);
+}
+
   );
 });
 
 /* ===========================
-   BILLING
+   BILLING (CRITICAL FIX)
 =========================== */
-app.get("/billing/:id", (req, res) => {
+app.get("/billing/:id", requireLogin("reception"), (req, res) => {
   res.render("billing", { opId: req.params.id });
 });
 
-app.post("/billing/pay", (req, res) => {
+app.post("/billing/pay", requireLogin("reception"), (req, res) => {
   const { opId, amount, payment_type } = req.body;
 
   db.query(
-    "INSERT INTO billing VALUES (NULL,?,?,?, 'Paid', NOW())",
+    "INSERT INTO billing (op_id,amount,payment_type,status,created_at) VALUES (?,?,?,'Paid',NOW())",
     [opId, amount, payment_type],
     () => res.redirect("/op/today")
   );
@@ -171,19 +175,17 @@ app.post("/billing/pay", (req, res) => {
 /* ===========================
    TODAY OPS
 =========================== */
-app.get("/op/today", (req, res) => {
+app.get("/op/today", requireLogin("reception"), (req, res) => {
   db.query(
     "SELECT * FROM op_patients WHERE DATE(created_at)=CURDATE() ORDER BY created_at",
-    (err, ops) => {
-      res.render("today_ops", { ops });
-    }
+    (_, ops) => res.render("today_ops", { ops })
   );
 });
 
 /* ===========================
    CALL / COMPLETE
 =========================== */
-app.post("/op/call/:id", (req, res) => {
+app.post("/op/call/:id", requireLogin("reception"), (req, res) => {
   db.query(
     "UPDATE op_patients SET status='In Consultation' WHERE id=?",
     [req.params.id],
@@ -191,7 +193,7 @@ app.post("/op/call/:id", (req, res) => {
   );
 });
 
-app.post("/op/complete/:id", (req, res) => {
+app.post("/op/complete/:id", requireLogin("reception"), (req, res) => {
   db.query(
     "UPDATE op_patients SET status='Completed' WHERE id=?",
     [req.params.id],
@@ -200,97 +202,41 @@ app.post("/op/complete/:id", (req, res) => {
 });
 
 /* ===========================
-   DOCTOR SCREEN
+   DOCTOR DASHBOARD
 =========================== */
-app.get("/doctor", (req, res) => {
-  if (req.session.role !== "doctor") return res.redirect("/");
-
+app.get("/doctor", requireLogin("doctor"), (req, res) => {
   db.query(
     "SELECT * FROM op_patients WHERE status!='Completed' ORDER BY created_at",
-    (err, ops) => {
-      res.render("doctor", { ops });
-    }
+    (_, ops) => res.render("doctor", { ops })
   );
 });
 
 /* ===========================
-   OP HISTORY & REVISIT
+   OP HISTORY
 =========================== */
-app.get("/op/history", (req, res) => {
+app.get("/op/history", requireLogin("reception"), (req, res) => {
   db.query(
     "SELECT * FROM op_patients ORDER BY created_at DESC",
-    (err, patients) => {
-      if (err) patients = [];
-      res.render("op_history", { patients });
-    }
+    (_, patients) => res.render("op_history", { patients })
   );
 });
 
-
-
-app.post("/op/history", (req, res) => {
-  db.query(
-    "SELECT * FROM op_patients WHERE mobile=? ORDER BY created_at DESC",
-    [req.body.mobile],
-    (err, patients) => {
-      res.render("op_history", { patients });
-    }
-  );
-});
-app.get("/op/history/search", (req, res) => {
-  const mobile = req.query.mobile;
-
-  let sql = "SELECT * FROM op_patients";
-  let params = [];
-
-  if (mobile && mobile.length > 0) {
-    sql += " WHERE mobile LIKE ?";
-    params.push(`%${mobile}%`);
-  }
-
-  sql += " ORDER BY created_at DESC";
-
-  db.query(sql, params, (err, rows) => {
-    if (err) return res.json([]);
-    res.json(rows);
-  });
-});
-
-
-app.get("/op/revisit/:id", (req, res) => {
-  db.query(
-    "SELECT * FROM op_patients WHERE id=?",
-    [req.params.id],
-    (err, old) => {
-      db.query("SELECT * FROM departments", (e, depts) => {
-        db.query("SELECT * FROM doctors", (e2, docs) => {
-          res.render("new_op", {
-            depts,
-            docs,
-            old: old[0]
-          });
-        });
-      });
-    }
-  );
-});
-app.get("/op/list", (req, res) => {
+/* ===========================
+   OP LIST (TOP BUTTONS)
+=========================== */
+app.get("/op/list", requireLogin("reception"), (req, res) => {
   const status = req.query.status;
-
   let sql = "SELECT * FROM op_patients";
   let params = [];
 
   if (status && status !== "ALL") {
-    sql += " WHERE status = ?";
+    sql += " WHERE status=?";
     params.push(status);
   }
 
   sql += " ORDER BY created_at DESC";
 
-  db.query(sql, params, (err, ops) => {
-    if (err) ops = [];
-
-    // 🔥 IMPORTANT PART
+  db.query(sql, params, (_, ops) => {
     if (req.query.partial) {
       res.render("partials/op_list", { ops, status });
     } else {
@@ -299,10 +245,16 @@ app.get("/op/list", (req, res) => {
   });
 });
 
+/* ===========================
+   LOGOUT
+=========================== */
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => res.redirect("/"));
+});
 
 /* ===========================
    SERVER
 =========================== */
-app.listen(3000, () =>
-  console.log("🚀 Server running → http://localhost:3000")
-);
+app.listen(3000, () => {
+  console.log("🚀 OP Desk running → http://localhost:3000");
+});
